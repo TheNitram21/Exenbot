@@ -1,6 +1,7 @@
 package de.onlinehome.mann.martin.exenbot;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -29,17 +30,17 @@ public class Exenbot {
 	public static void main(String[] args) {
 		try {
 			new Exenbot();
-		} catch (LoginException | IllegalArgumentException e) {
+		} catch (LoginException | IllegalArgumentException | FileNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public Exenbot() throws LoginException, IllegalArgumentException {
+	public Exenbot() throws LoginException, IllegalArgumentException, FileNotFoundException {
 		LiteSQL.connect();
 		SQLManager.onCreate();
+		Configuration.read();
 
-		builder = DefaultShardManagerBuilder
-				.createDefault("ODM0MDM5Njk3MzE0NTQ1NzM1.YH7F_w.o9IVGhU4ItK5tpZhdXr0WgYnI4M");
+		builder = DefaultShardManagerBuilder.createDefault(Configuration.getToken());
 
 		builder.enableIntents(GatewayIntent.GUILD_MEMBERS);
 		builder.addEventListeners(new MessageListener(), new JoinListener(), new ReadyListener());
