@@ -32,6 +32,7 @@ public class StopCommand implements ServerCommand {
 		} catch (NullPointerException e) {
 		}
 
+		message.delete().queue();
 		Exenbot.stop();
 	}
 
