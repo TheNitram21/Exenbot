@@ -1,62 +1,85 @@
 package de.onlinehome.mann.martin.exenbot.spam;
 
+import static de.onlinehome.mann.martin.exenbot.YamlUtil.saveYAML;
+
 import de.onlinehome.mann.martin.exenbot.Exenbot;
-import net.dv8tion.jda.api.entities.Member;
+import de.onlinehome.mann.martin.exenbot.YamlUtil.YamlData.SpamStateData;
+import net.dv8tion.jda.api.entities.Guild;
 
 public class SpamState {
 	
-	public final Member member;
-	private String lastMsg;
-	private long lastMsgSentWhen;
-	private int msgCount;
-	private long lastWarningGotWhen;
-	private int warningCount;
+	private SpamStateData data;
 	
-	public SpamState(Member member) {
-		this.member = member;
-		this.lastMsg = "";
-		this.lastMsgSentWhen = System.currentTimeMillis();
-		this.msgCount = 1;
+	public SpamState(SpamStateData data) {
+		this.data = data;
 	}
 	
 	public void updateSpamState(String lastMsg) {
-		if((lastMsgSentWhen - System.currentTimeMillis()) >= 600000) {
-			msgCount = 0;
-		}
-		if((lastWarningGotWhen - System.currentTimeMillis()) >= 86400000) {
-			member.getGuild().addRoleToMember(member, member.getGuild().getRolesByName("Nice One", false).get(0));
-			warningCount = 0;
+		if((System.currentTimeMillis() - data.getLastMsgSentWhen()) >= 600000) {
+			data.setMsgCount(1);
 		}
 		
-		lastMsgSentWhen = System.currentTimeMillis();
-		
-		if(this.lastMsg.equals(lastMsg))
-			msgCount++;
-		else
-			msgCount = 1;
-		
-		if(msgCount >= Exenbot.MAX_SAME_MESSAGES_BEFORE_WARNING) {
-			warningCount++;
-			lastWarningGotWhen = System.currentTimeMillis();
+		if(data.getLastMsg().equals(lastMsg)) {
+			data.setMsgCount(data.getMsgCount() + 1);
+		} else {
+			data.setLastMsg(lastMsg);
+			data.setMsgCount(1);
 		}
 		
-		this.lastMsg = lastMsg;
+		if(data.getMsgCount() >= Exenbot.MAX_SAME_MESSAGES_BEFORE_WARNING) {
+			data.setWarningCount(data.getWarningCount() + 1);
+		}
+		
+		data.setLastMsgSentWhen(System.currentTimeMillis());
+		
+		saveYAML();
+	}
+	
+	public void setMuteEnd(long muteEnd) {
+		data.setMuteEnd(muteEnd);
+		saveYAML();
 	}
 	
 	public int getSpamState() {
-		return msgCount;
+		return data.getMsgCount();
 	}
 	
-	public int getWarnings() {
-		return warningCount;
+	public int getWarningCount() {
+		return data.getWarningCount();
+	}
+	
+	public long getMemberId() {
+		return data.getMemberId();
+	}
+	
+	public long getMuteEnd() {
+		return data.getMuteEnd();
 	}
 	
 	public void resetSpamState() {
-		msgCount = 0;
+		data.setMsgCount(0);
+		saveYAML();
 	}
 	
-	public void resetWarnings() {
-		warningCount = 0;
+	public void resetWarningCount() {
+		data.setWarningCount(0);
+		saveYAML();
+	}
+	
+	public void resetMuteEnd() {
+		data.setMuteEnd(-1);
+		saveYAML();
+	}
+	
+	public boolean shouldUnmute() {
+		if(data.getMuteEnd() != -1 && System.currentTimeMillis() >= data.getMuteEnd()) {
+			return true;
+		} else
+			return false;
+	}
+	
+	public void unmute(Guild guild) {
+		guild.addRoleToMember(getMemberId(), Exenbot.getNiceOneRole()).queue();
 	}
 	
 }

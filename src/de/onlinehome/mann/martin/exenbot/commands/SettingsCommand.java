@@ -1,9 +1,11 @@
 package de.onlinehome.mann.martin.exenbot.commands;
 
+import static de.onlinehome.mann.martin.exenbot.YamlUtil.saveYAML;
+
 import java.util.concurrent.TimeUnit;
 
+import de.onlinehome.mann.martin.exenbot.YamlUtil;
 import de.onlinehome.mann.martin.exenbot.commands.types.ServerCommand;
-import de.onlinehome.mann.martin.exenbot.litesql.SQLUtil;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
@@ -36,11 +38,11 @@ public class SettingsCommand implements ServerCommand {
 		} else {
 			if (args[1].equals("prefix")) {
 				try {
-					SQLUtil.setPrefix(guild, args[2]);
+					YamlUtil.setPrefix(guild, args[2]);
 					channel.sendMessage(
 							new EmbedBuilder().setTitle("Neuer Prefix!")
 									.addField("",
-											"Prefix für " + guild.getName() + " ist nun " + SQLUtil.getPrefix(guild)
+											"Prefix für " + guild.getName() + " ist nun " + YamlUtil.getPrefix(guild)
 													+ ".",
 											false)
 									.build())
@@ -53,6 +55,7 @@ public class SettingsCommand implements ServerCommand {
 			}
 		}
 
+		saveYAML();
 		message.delete().queue();
 	}
 

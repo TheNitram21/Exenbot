@@ -34,8 +34,7 @@ public class StopCommand implements ServerCommand {
 								+ "- Der Bot.")
 						.queue();
 			}
-		} catch (NullPointerException e) {
-		}
+		} catch (ArrayIndexOutOfBoundsException e) { }
 
 		message.delete().queue();
 		Exenbot.stop();
