@@ -28,6 +28,11 @@ public class StopCommand implements ServerCommand {
 				channel.getGuild().getTextChannelsByName("news", false).get(0).sendMessage(
 						"Aufgrund von Wartungsarbeiten wird der Bot gestoppt. Wir bitten um Verständnis.\n\n- Der Bot.")
 						.queue();
+			} else if (args[1].equals("restart")) {
+				channel.getGuild().getTextChannelsByName("news", false).get(0).sendMessage(
+						"Der Bot wird kurz neugestartet, um neue Features zu aktivieren. Wir bitten um Verständnis.\n\n"
+								+ "- Der Bot.")
+						.queue();
 			}
 		} catch (NullPointerException e) {
 		}

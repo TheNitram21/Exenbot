@@ -22,7 +22,7 @@ public class MessageListener extends ListenerAdapter {
 		String[] args = message.split(" ");
 
 		if (!event.getAuthor().isBot())
-			spamStates.setSpamState(member, message);
+			spamStates.updateSpamState(member, message);
 
 		if (spamStates.getSpamState(member) >= Exenbot.MAX_SAME_MESSAGES_BEFORE_WARNING) {
 			EmbedBuilder builder = new EmbedBuilder();
@@ -33,8 +33,20 @@ public class MessageListener extends ListenerAdapter {
 					+ "hintereinander geschickt. Bitte unterlasse den Spam ab jetzt, sonst könntest du einen *Chat-Mute* "
 					+ "erhalten.", false);
 			channel.sendMessage(builder.build()).queue();
-			channel.sendMessage(channel.getGuild().getRolesByName("Team", false).get(0).getAsMention()).queue();
 			spamStates.resetSpamState(member);
+		}
+		if (spamStates.getWarnings(member) >= Exenbot.MAX_SAME_MESSAGES_BEFORE_WARNING) {
+			event.getGuild().removeRoleFromMember(member, event.getGuild().getRolesByName("Nice One", false).get(0)).queue();
+			EmbedBuilder builder = new EmbedBuilder();
+			builder.setTitle("MUTE");
+			builder.setThumbnail(event.getJDA().getSelfUser().getEffectiveAvatarUrl());
+			builder.setColor(0xdf0101);
+			builder.addField("Grund: Spam", "Hallo " + member.getAsMention()
+					+ ",\ndu hast ***25** gleiche Nachrichten* hintereinander geschickt. Deshalb bekommst du jetzt einen "
+					+ "*Chat-Mute*. Bei noch stärkerem Verstoß könntest du einen Bann erhalten. Dies liegt aber in der "
+					+ "Hand des Teams.", false);
+			channel.sendMessage(builder.build()).queue();
+			spamStates.resetWarnings(member);
 		}
 
 		if (message.startsWith(prefix) && !event.getAuthor().isBot()) {
@@ -57,7 +69,8 @@ public class MessageListener extends ListenerAdapter {
 		} else if (event.getAuthor().getIdLong() == 159985870458322944L && channel.getName().equals("level")
 				&& message.startsWith("GG ")) {
 			event.getMessage().delete().queue();
-			channel.sendMessage(event.getGuild().getMemberById(159985870458322944L).getAsMention() + ", sei ruhig.").queue();
+			channel.sendMessage(event.getGuild().getMemberById(159985870458322944L).getAsMention() + ", sei ruhig.")
+					.queue();
 		}
 	}
 

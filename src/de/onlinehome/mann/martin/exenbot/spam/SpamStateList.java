@@ -13,7 +13,7 @@ public class SpamStateList {
 		list.add(new SpamState(member));
 	}
 	
-	public void setSpamState(Member member, String lastMsg) {
+	public void updateSpamState(Member member, String lastMsg) {
 		for (SpamState spamState : list) {
 			if(spamState.member.getIdLong() == member.getIdLong()) {
 				spamState.updateSpamState(lastMsg);
@@ -33,10 +33,28 @@ public class SpamStateList {
 		return 0;
 	}
 	
+	public int getWarnings(Member member) {
+		for (SpamState spamState : list) {
+			if(spamState.member.getIdLong() == member.getIdLong()) {
+				return spamState.getWarnings();
+			}
+		}
+		add(member);
+		return 0;
+	}
+	
 	public void resetSpamState(Member member) {
 		for (SpamState spamState : list) {
 			if(spamState.member.getIdLong() == member.getIdLong()) {
 				spamState.resetSpamState();
+			}
+		}
+	}
+	
+	public void resetWarnings(Member member) {
+		for (SpamState spamState : list) {
+			if(spamState.member.getIdLong() == member.getIdLong()) {
+				spamState.resetWarnings();
 			}
 		}
 	}

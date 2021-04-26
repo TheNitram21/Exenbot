@@ -30,13 +30,15 @@ public class CommandManager {
 			if (m.hasPermission(cmd.getNeededPermission())) {
 				cmd.performCommand(m, channel, message);
 				return true;
-			} else
+			} else {
 				channel.sendMessage(new EmbedBuilder().setTitle("Keine Berechtigungen").setColor(0xdf0101)
 						.addField("",
 								"Dazu hast du keine Berechtigungen. Falls du denkst, dass das ein Fehler ist, "
 										+ "frage bitte einen Administrator.",
 								false)
 						.build()).complete().delete().queueAfter(7, TimeUnit.SECONDS);
+				return true;
+			}
 		}
 
 		return false;

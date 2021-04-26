@@ -25,7 +25,13 @@ public class HelpCommand implements ServerCommand {
 	@Override
 	public void performCommand(Member m, TextChannel channel, Message message) {
 		EmbedBuilder builder = new EmbedBuilder().setTitle("Hilfe").setColor(0x2efe2e);
-		builder.addField(".settings", "Einstellungen.\nNur möglich, wenn du Admin bist.", false);
+		builder.setDescription("**Commands für jeden**");
+		builder.addField(".help", "Zeigt diese Liste an.", false);
+		if(m.hasPermission(Permission.MANAGE_SERVER)) {
+			builder.addField("", "**Admincommands**", false);
+			builder.addField(".settings", "Einstellungen.", false);
+			builder.addField(".stop [maintenance|restart]", "Stoppt den Bot.", false);
+		}
 		channel.sendMessage(builder.build()).complete().delete().queueAfter(30, TimeUnit.SECONDS);
 		message.delete().queue();
 	}
