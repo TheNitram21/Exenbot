@@ -1,5 +1,6 @@
 package de.onlinehome.mann.martin.exenbot.listener;
 
+import de.onlinehome.mann.martin.exenbot.Exenbot;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -20,8 +21,8 @@ public class JoinListener extends ListenerAdapter {
 				false);
 		
 		event.getUser().openPrivateChannel().complete().sendMessage(builder.build()).queue();
-		event.getGuild().addRoleToMember(event.getMember(), event.getGuild().getRolesByName("Nice One", false).get(0));
-		
+		event.getGuild().addRoleToMember(event.getMember(), Exenbot.getNiceOneRole());
+		event.getGuild().addRoleToMember(event.getMember(), Exenbot.getMemberRole());
 		
 	}
 	

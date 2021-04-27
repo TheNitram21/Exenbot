@@ -1,0 +1,16 @@
+!!de.onlinehome.mann.martin.exenbot.YamlUtil$YamlData
+spamStateDatas:
+- lastMsg: ''
+  lastMsgSentWhen: -1
+  memberId: 834039697314545735
+  msgCount: 0
+  muteEnd: -1
+  warningCount: 0
+- lastMsg: ?temptalk create Testtalk
+  lastMsgSentWhen: 1619528019407
+  memberId: 424474905418137618
+  msgCount: 1
+  muteEnd: -1
+  warningCount: 0
+streamDatas: [
+  ]

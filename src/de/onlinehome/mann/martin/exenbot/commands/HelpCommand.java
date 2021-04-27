@@ -14,20 +14,22 @@ public class HelpCommand implements ServerCommand {
 	public HelpCommand(Permission neededPermission) {
 		this.neededPermission = neededPermission;
 	}
-	
+
 	@Override
 	public Permission getNeededPermission() {
 		return neededPermission;
 	}
 
 	private Permission neededPermission;
-	
+
 	@Override
 	public void performCommand(Member m, TextChannel channel, Message message) {
 		EmbedBuilder builder = new EmbedBuilder().setTitle("Hilfe").setColor(0x2efe2e);
 		builder.setDescription("**Commands für jeden**");
 		builder.addField(".help", "Zeigt diese Liste an.", false);
-		if(m.hasPermission(Permission.MANAGE_SERVER)) {
+		builder.addField(".temptalk <create|delete|size> [Name (*create*) bzw. Größe (*size*)]",
+				"Erstellt, löscht oder setzt die Größe eines Temptalks.", false);
+		if (m.hasPermission(Permission.MANAGE_SERVER)) {
 			builder.addField("", "**Admincommands**", false);
 			builder.addField(".settings", "Einstellungen.", false);
 			builder.addField(".stop [maintenance|restart]", "Stoppt den Bot.", false);

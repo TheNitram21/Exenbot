@@ -19,6 +19,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 
 import de.onlinehome.mann.martin.exenbot.YamlUtil.YamlData.SpamStateData;
+import de.onlinehome.mann.martin.exenbot.YamlUtil.YamlData.StreamData;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 
@@ -78,13 +79,36 @@ public class YamlUtil {
 		return temp;
 	}
 	
+	public static void setStreamDatas(List<StreamData> streamDatas) {
+		data.setStreamDatas(streamDatas);
+	}
+	
+	public static void newStream(long when, String what) {
+		StreamData temp = new StreamData();
+		temp.setWhen(when);
+		temp.setWhat(what);
+		data.streamDatas.add(temp);
+	}
+	
+	public static void removeStream(long when) {
+		for (StreamData data : YamlUtil.data.getStreamDatas()) {
+			if(data.when == when) {
+				List<StreamData> temp = YamlUtil.data.getStreamDatas();
+				if(temp.remove(data))
+					setStreamDatas(temp);
+			}
+		}
+	}
+	
 	public static class YamlData {
 		private Map<Guild, String> prefix;
 		private List<SpamStateData> spamStateDatas;
+		private List<StreamData> streamDatas;
 		
 		public YamlData() {
 			prefix = new HashMap<>();
 			spamStateDatas = new ArrayList<>();
+			setStreamDatas(new ArrayList<>());
 		}
 		
 		public String getPrefix(Guild guild) {
@@ -103,6 +127,14 @@ public class YamlUtil {
 			this.spamStateDatas = spamStateDatas;
 		}
 		
+		public List<StreamData> getStreamDatas() {
+			return streamDatas;
+		}
+
+		public void setStreamDatas(List<StreamData> streamDatas) {
+			this.streamDatas = streamDatas;
+		}
+
 		public static class SpamStateData {
 			private long memberId;
 			private String lastMsg;
@@ -166,6 +198,32 @@ public class YamlUtil {
 
 			public void setMuteEnd(long muteEnd) {
 				this.muteEnd = muteEnd;
+			}
+		}
+		
+		public static class StreamData {
+			private long when;
+			private String what;
+			
+			public StreamData() {
+				this.when = -1L;
+				this.what = "";
+			}
+			
+			public long getWhen() {
+				return when;
+			}
+			
+			public void setWhen(long when) {
+				this.when = when;
+			}
+			
+			public String getWhat() {
+				return what;
+			}
+			
+			public void setWhat(String what) {
+				this.what = what;
 			}
 		}
 	}

@@ -21,6 +21,8 @@ public class CommandManager {
 		this.commands.put("settings", new SettingsCommand(Permission.MANAGE_SERVER));
 		this.commands.put("help", new HelpCommand(Permission.MESSAGE_WRITE));
 		this.commands.put("stop", new StopCommand(Permission.MANAGE_SERVER));
+		this.commands.put("streamplan", new StreamPlanCommand(Permission.MESSAGE_WRITE));
+		this.commands.put("temptalk", Exenbot.tempTalkCommand);
 	}
 
 	public boolean perform(String command, Member m, TextChannel channel, Message message) {

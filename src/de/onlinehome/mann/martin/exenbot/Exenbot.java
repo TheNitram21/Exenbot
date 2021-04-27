@@ -6,11 +6,13 @@ import java.io.InputStreamReader;
 
 import javax.security.auth.login.LoginException;
 
+import de.onlinehome.mann.martin.exenbot.commands.TempTalkCommand;
 import de.onlinehome.mann.martin.exenbot.listener.JoinListener;
 import de.onlinehome.mann.martin.exenbot.listener.MessageListener;
 import de.onlinehome.mann.martin.exenbot.logging.DiscordLogger;
 import de.onlinehome.mann.martin.exenbot.spam.SpamStateList;
 import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -25,11 +27,14 @@ public class Exenbot {
 	public static CommandManager cmdMan;
 	public static DiscordLogger logger;
 	
+	public static TempTalkCommand tempTalkCommand = new TempTalkCommand(Permission.VOICE_SPEAK);
+	
 	public static SpamStateList spamStates = new SpamStateList();
 
 	public static final int MAX_SAME_MESSAGES_BEFORE_WARNING = 5;
 	public static final int MAX_WARNINGS_BEFORE_MUTE = 3;
 	private static Role NICEONEROLE;
+	private static Role MEMBERROLE;
 
 	public static void main(String[] args) {
 		try {
@@ -46,11 +51,12 @@ public class Exenbot {
 		builder = DefaultShardManagerBuilder.createDefault(Configuration.getToken());
 
 		builder.enableIntents(GatewayIntent.GUILD_MEMBERS);
-		builder.addEventListeners(new MessageListener(), new JoinListener(),
+		builder.addEventListeners(new MessageListener(), new JoinListener(), tempTalkCommand,
 				new ListenerAdapter() {
 					@Override
 					public void onReady(ReadyEvent event) {
 						NICEONEROLE = shardMan.getGuildById(820741090855616582l).getRolesByName("Nice One", false).get(0);
+						MEMBERROLE = shardMan.getGuildById(820741090855616582l).getRolesByName("Member", false).get(0);
 						spamStates.startUnmuteTest();
 						Exenbot.logger.sendLogInfo("", "Bot online.", Exenbot.shardMan.getGuilds());
 					}
@@ -102,6 +108,10 @@ public class Exenbot {
 
 	public static Role getNiceOneRole() {
 		return NICEONEROLE;
+	}
+	
+	public static Role getMemberRole() {
+		return MEMBERROLE;
 	}
 
 }
