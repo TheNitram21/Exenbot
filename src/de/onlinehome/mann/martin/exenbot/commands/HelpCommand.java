@@ -36,6 +36,8 @@ public class HelpCommand implements ServerCommand {
 			builder.addField("", "**Admincommands**", false);
 			builder.addField(prefix + "settings", "Einstellungen.", false);
 			builder.addField(prefix + "stop [maintenance|restart]", "Stoppt den Bot.", false);
+			builder.addField(prefix + "announce <reset|message|send|footer|mention> [Weitere Argumente]", "Baut und sendet eine "
+					+ "Ankündigung.", false);
 		}
 		channel.sendMessage(builder.build()).complete().delete().queueAfter(30, TimeUnit.SECONDS);
 		message.delete().queue();

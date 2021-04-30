@@ -25,19 +25,15 @@ public class StopCommand implements ServerCommand {
 		String[] args = message.getContentDisplay().split(" ");
 		try {
 			if (args[1].equals("maintenance")) {
-				channel.getGuild().getTextChannelsByName("news", false).get(0).sendMessage(
-						"Aufgrund von Wartungsarbeiten wird der Bot gestoppt. Wir bitten um Verständnis.\n\n- Der Bot.")
-						.queue();
+				Exenbot.stop("Wartungsarbeiten");
 			} else if (args[1].equals("restart")) {
-				channel.getGuild().getTextChannelsByName("news", false).get(0).sendMessage(
-						"Der Bot wird kurz neugestartet, um neue Features zu aktivieren. Wir bitten um Verständnis.\n\n"
-								+ "- Der Bot.")
-						.queue();
+				Exenbot.stop("Kurzer Restart");
+			} else {
+				Exenbot.stop("");
 			}
 		} catch (ArrayIndexOutOfBoundsException e) { }
 
 		message.delete().queue();
-		Exenbot.stop();
 	}
 
 }

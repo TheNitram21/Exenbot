@@ -50,9 +50,13 @@ public class TempTalkCommand extends ListenerAdapter implements ServerCommand {
 			channel.sendMessage(
 					new EmbedBuilder().setTitle("Fehler").setDescription("Zu wenig Argumente!").build())
 					.complete().delete().queueAfter(7, TimeUnit.SECONDS);
-		} catch(IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			channel.sendMessage(
 					new EmbedBuilder().setTitle("Fehler").setDescription("Größe darf maximal 99 sein!").build())
+					.complete().delete().queueAfter(7, TimeUnit.SECONDS);
+		} catch (NumberFormatException e) {
+			channel.sendMessage(
+					new EmbedBuilder().setTitle("Fehler").setDescription("`" + args[2] + "` ist keine Zahl!").build())
 					.complete().delete().queueAfter(7, TimeUnit.SECONDS);
 		}
 		
