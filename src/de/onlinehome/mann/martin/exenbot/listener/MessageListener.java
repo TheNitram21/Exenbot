@@ -1,7 +1,6 @@
 package de.onlinehome.mann.martin.exenbot.listener;
 
 import de.onlinehome.mann.martin.exenbot.Exenbot;
-import de.onlinehome.mann.martin.exenbot.YamlUtil;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -15,8 +14,6 @@ public class MessageListener extends ListenerAdapter {
 		String message = event.getMessage().getContentDisplay();
 		Member member = event.getMember();
 		TextChannel channel = event.getChannel();
-		String prefix = YamlUtil.getPrefix(event.getGuild());
-		String[] args = message.split(" ");
 
 		if (!event.getAuthor().isBot())
 			Exenbot.spamStates.updateSpamState(member, message);
@@ -45,25 +42,6 @@ public class MessageListener extends ListenerAdapter {
 			channel.sendMessage(builder.build()).queue();
 			Exenbot.spamStates.setMuteEnd(member, System.currentTimeMillis() + 86400000);
 			Exenbot.spamStates.resetWarnings(member);
-		}
-
-		if (message.startsWith(prefix) && !event.getAuthor().isBot()) {
-			args = message.substring(prefix.length()).split(" ");
-
-			if (args.length > 0) {
-				if (!Exenbot.getCmdMan().perform(args[0], event.getMember(), channel, event.getMessage())) {
-					channel.sendMessage(
-							"`Error: Undefined Command`\nWenn dieser Fehler öfter auftritt, frage bitte einen Bot Developer.")
-							.queue();
-				}
-			}
-		} else if (event.getMessage().getMentionedUsers().contains(event.getJDA().getSelfUser())) {
-			EmbedBuilder embed = new EmbedBuilder();
-			embed.setTitle("Prefix");
-			embed.setColor(0xdf0101);
-			embed.addField("Prefix für " + channel.getGuild().getName(), "Der Prefix für "
-					+ channel.getGuild().getName() + " lautet: `" + YamlUtil.getPrefix(channel.getGuild()) + "`", true);
-			channel.sendMessage(embed.build()).queue();
 		}
 	}
 

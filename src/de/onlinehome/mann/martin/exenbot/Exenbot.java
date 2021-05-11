@@ -3,6 +3,7 @@ package de.onlinehome.mann.martin.exenbot;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Random;
 
 import javax.security.auth.login.LoginException;
@@ -16,17 +17,19 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.events.ReadyEvent;
+import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.sharding.ShardManager;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 
 public class Exenbot {
 
 	private DefaultShardManagerBuilder builder;
 	public static ShardManager shardMan;
-	public static CommandManager cmdMan;
+	public static SlashCommandManager cmdMan;
 	public static DiscordLogger logger;
 
 	public static TempTalkCommand tempTalkCommand = new TempTalkCommand(Permission.VOICE_SPEAK);
@@ -38,8 +41,9 @@ public class Exenbot {
 	private static Role NICEONEROLE;
 	private static Role MEMBERROLE;
 
-	private static Activity[] activities = { Activity.watching("Eidexe13"),
-			Activity.watching("sich Discord-Channels an."), Activity.listening("der Konsole"), Activity.listening("@Exenbot") };
+	private static final Activity[] activities = { Activity.watching("Eidexe13"),
+			Activity.watching("sich Discord-Channels an."), Activity.listening("der Konsole"),
+			Activity.listening("@Exenbot") };
 
 	public static void main(String[] args) {
 		try {
@@ -52,22 +56,44 @@ public class Exenbot {
 	public Exenbot() throws LoginException, IllegalArgumentException, IOException {
 		YamlUtil.load();
 		Configuration.read();
+		SlashCommandManager.activateSlashCommands(false,
+				"{ \"name\": \"stop\", \"description\": \"Stoppt den Bot\", \"options\": [ { \"name\": \"reason\", \"description\": \"Warum stoppt der Bot?\", \"type\": 3, \"required\": true, \"choices\": [ { \"name\": \"Restart\", \"value\": \"restart\" }, { \"name\": \"Maintenance\", \"value\": \"maintenance\" } ] } ] }",
+				"{ \"name\": \"credits\", \"description\": \"Schickt die Credits\", \"options\": [] }",
+				"{ \"name\": \"temptalk\", \"description\": \"Verwaltet temporäre Sprachkanäle\", \"options\": [ { \"name\": \"create\", \"description\": \"Erstellt einen Temptalk\", \"value\": \"create\", \"type\": 1, \"required\": false, \"options\": [ { \"name\": \"Name\", \"description\": \"Der Name des Temptalks\", \"type\": 3, \"value\": \"talkName\", \"required\": true } ] }, { \"name\": \"delete\", \"description\": \"Löscht den Temptalk, in dem du bist\", \"type\": 1, \"value\": \"delete\" }, { \"name\": \"size\", \"description\": \"Setzt die Größe des Temptalks\", \"value\": \"size\", \"type\": 1, \"required\": false, \"options\": [ { \"name\": \"newsize\", \"description\": \"Setzt die Größe des Temptalks in dem du bist\", \"type\": 4, \"value\": \"talkNewSize\", \"required\": true } ] } ] }");
 
+		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+			@Override
+			public void uncaughtException(Thread t, Throwable e) {
+				System.out.println("[Exenbot" + DiscordLogger.getDateAndTimeNow() + "] An ungaught exception occured in thread " + t.getName() + " | Stack-Trace:");
+				e.printStackTrace();
+				logger.sendLogError("Ungefangene Exception im Thread " + t.getName(), (Exception) e, shardMan.getGuilds());
+			}
+		});
+		
 		builder = DefaultShardManagerBuilder.createDefault(Configuration.getToken());
 
 		builder.enableIntents(GatewayIntent.GUILD_MEMBERS);
-		builder.addEventListeners(new MessageListener(), new JoinListener(), tempTalkCommand, new ListenerAdapter() {
-			@Override
-			public void onReady(ReadyEvent event) {
-				NICEONEROLE = shardMan.getGuildById(820741090855616582l).getRolesByName("Nice One", false).get(0);
-				MEMBERROLE = shardMan.getGuildById(820741090855616582l).getRolesByName("Member", false).get(0);
-				spamStates.startUnmuteTest();
-				Exenbot.logger.sendLogInfo("", "Bot online.", Exenbot.shardMan.getGuilds());
-			}
-		});
+		builder.setRawEventsEnabled(true);
+		builder.setMemberCachePolicy(MemberCachePolicy.ALL);
+		builder.addEventListeners(new MessageListener(), new JoinListener(), tempTalkCommand, new SlashCommandManager(),
+				new ListenerAdapter() {
+					@Override
+					public void onGuildReady(GuildReadyEvent event) {
+						NICEONEROLE = shardMan.getGuildById(820741090855616582l).getRolesByName("Nice One", false)
+								.get(0);
+						MEMBERROLE = shardMan.getGuildById(820741090855616582l).getRolesByName("Member", false).get(0);
+						spamStates.startUnmuteTest();
+						event.getGuild().loadMembers();
+						logger.sendLogInfo("", "Bot online.", Exenbot.shardMan.getGuilds());
+					}
+					@Override
+					public void onGuildJoin(GuildJoinEvent event) {
+						event.getGuild().loadMembers();
+					}
+				});
 
 		shardMan = builder.build();
-		cmdMan = new CommandManager();
+		cmdMan = new SlashCommandManager();
 		logger = new DiscordLogger();
 
 		consoleListener();
@@ -92,12 +118,12 @@ public class Exenbot {
 
 	public static void stop(String reason) {
 		try {
-			if(reason.isBlank() || reason == null) {
+			if (reason.isBlank() || reason == null) {
 				logger.sendLogInfo("", "Bot stoppt...\n**Grund**: ---", shardMan.getGuilds(), 0xdf0101);
 			} else {
 				logger.sendLogInfo("", "Bot stoppt...\n**Grund**: " + reason, shardMan.getGuilds(), 0xdf0101);
 			}
-			
+
 			for (int i = 5; i > 0; i--) {
 				if (i != 1)
 					System.out.println("Bot stops in " + i + " seconds.");
@@ -131,7 +157,7 @@ public class Exenbot {
 		}).start();
 	}
 
-	public static CommandManager getCmdMan() {
+	public static SlashCommandManager getCmdMan() {
 		return cmdMan;
 	}
 

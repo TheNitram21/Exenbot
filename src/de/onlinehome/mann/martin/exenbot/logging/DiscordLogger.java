@@ -43,7 +43,7 @@ public class DiscordLogger {
 		}
 	}
 
-	public String getDateAndTimeNow() {
+	public static String getDateAndTimeNow() {
 		LocalDateTime now = LocalDateTime.now();
 		return now.getDayOfMonth() + "." + now.getMonthValue() + "." + now.getYear() + " " + now.getHour() + ":"
 				+ now.getMinute() + ":" + now.getSecond();

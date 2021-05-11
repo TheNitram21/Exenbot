@@ -2,20 +2,20 @@ package de.onlinehome.mann.martin.exenbot.commands;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
+import org.json.JSONObject;
+
+import de.onlinehome.mann.martin.exenbot.Exenbot;
 import de.onlinehome.mann.martin.exenbot.commands.types.ServerCommand;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class TempTalkCommand extends ListenerAdapter implements ServerCommand {
-	
+
 	public TempTalkCommand(Permission neededPermission) {
 		this.neededPermission = neededPermission;
 	}
@@ -25,55 +25,59 @@ public class TempTalkCommand extends ListenerAdapter implements ServerCommand {
 	private Map<Long, Member> tempTalks = new HashMap<>();
 
 	@Override
-	public void performCommand(Member m, TextChannel channel, Message message) {
-		String[] args = message.getContentDisplay().split(" ", 3);
+	public String performCommand(JSONObject json) {
+		Guild guild = Exenbot.shardMan.getGuildById(json.getJSONObject("d").getString("guild_id"));
+		Member m = guild
+				.getMemberById(json.getJSONObject("d").getJSONObject("member").getJSONObject("user").getString("id"));
+
+		String mainArgument = json.getJSONObject("d").getJSONObject("data").getJSONArray("options").getJSONObject(0)
+				.getString("name");
 
 		try {
-			if (args[1].equals("create")) {
-				tempTalks.put(channel.getGuild().getCategoryById(820741090855616586L)
-						.createVoiceChannel("Temptalk " + args[2]).complete().getIdLong(), m);
-			} else if (args[1].equals("delete")) {
-				if (tempTalks.get(m.getVoiceState().getChannel().getIdLong()).equals(m)) {
+			if (mainArgument.equals("create")) {
+				VoiceChannel vc = guild.getCategoriesByName("Sprachkanäle", true).get(0)
+						.createVoiceChannel(
+								"Temptalk | " + json.getJSONObject("d").getJSONObject("data").getJSONArray("options")
+										.getJSONObject(0).getJSONArray("options").getJSONObject(0).getString("value"))
+						.complete();
+				tempTalks.put(vc.getIdLong(), m);
+			} else if (mainArgument.equals("delete")) {
+				if (tempTalks.get(m.getVoiceState().getChannel().getIdLong()).equals(m)
+						|| m.hasPermission(Permission.MANAGE_CHANNEL)) {
 					tempTalks.remove(m.getVoiceState().getChannel().getIdLong());
 					m.getVoiceState().getChannel().delete().queue();
 				}
-			} else if(args[1].equals("size")) {
-				if(tempTalks.get(m.getVoiceState().getChannel().getIdLong()).equals(m)) {
-					m.getVoiceState().getChannel().getManager().setUserLimit(Integer.parseInt(args[2])).queue();
+			} else if (mainArgument.equals("size")) {
+				if (tempTalks.get(m.getVoiceState().getChannel().getIdLong()).equals(m)
+						|| m.hasPermission(Permission.MANAGE_CHANNEL)) {
+					m.getVoiceState().getChannel().getManager()
+							.setUserLimit(json.getJSONObject("d").getJSONObject("data").getJSONArray("options")
+									.getJSONObject(0).getJSONArray("options").getJSONObject(0).getInt("value"))
+							.queue();
 				}
 			}
 		} catch (NullPointerException e) {
-			channel.sendMessage(
-					new EmbedBuilder().setTitle("Fehler").setDescription("Du bist in keinem Temptalk!").build())
-					.complete().delete().queueAfter(7, TimeUnit.SECONDS);
+			return "Du bist in keinem Temptalk!";
 		} catch (ArrayIndexOutOfBoundsException e) {
-			channel.sendMessage(
-					new EmbedBuilder().setTitle("Fehler").setDescription("Zu wenig Argumente!").build())
-					.complete().delete().queueAfter(7, TimeUnit.SECONDS);
+			return "Zu wenig Argumente!";
 		} catch (IllegalArgumentException e) {
-			channel.sendMessage(
-					new EmbedBuilder().setTitle("Fehler").setDescription("Größe darf maximal 99 sein!").build())
-					.complete().delete().queueAfter(7, TimeUnit.SECONDS);
-		} catch (NumberFormatException e) {
-			channel.sendMessage(
-					new EmbedBuilder().setTitle("Fehler").setDescription("`" + args[2] + "` ist keine Zahl!").build())
-					.complete().delete().queueAfter(7, TimeUnit.SECONDS);
+			return "Größe darf minimal 0 und maximal 99 sein!";
 		}
-		
-		message.delete().queue();
+
+		return "Erfolg!";
 	}
 
 	@Override
 	public Permission getNeededPermission() {
 		return neededPermission;
 	}
-	
+
 	@Override
 	public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
 		VoiceChannel channel = event.getChannelLeft();
-		
-		if(channel.getMembers().size() == 0) {
-			if(tempTalks.containsKey(channel.getIdLong())) {
+
+		if (channel.getMembers().size() == 0) {
+			if (tempTalks.containsKey(channel.getIdLong())) {
 				tempTalks.remove(channel.getIdLong());
 				channel.delete().queue();
 			}
