@@ -15,7 +15,7 @@ public class CreditsCommand implements ServerCommand {
 
 	@Override
 	public String performCommand(JSONObject json) {
-		return "**Das Team**: Eid.exe, Nitram21, Füchs | **Exenbot**: Nitram21 | **slive**: TJC-Team, Link: https://slivebot.de/ | "
+		return "**Das Team**: Eid.exe, Nitram21, Füchs | **Exenbot**: Nitram21, Link: https://github.com/NitramMann21/Exenbot/ | **slive**: TJC-Team, Link: https://slivebot.de/ | "
 				+ "**Ravebot**: Rapha#2626, .Peda | abgelehnt#6565, Link: https://rave-music.de/";
 	}
 

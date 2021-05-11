@@ -75,7 +75,7 @@ public class Exenbot {
 		builder.enableIntents(GatewayIntent.GUILD_MEMBERS);
 		builder.setRawEventsEnabled(true);
 		builder.setMemberCachePolicy(MemberCachePolicy.ALL);
-		builder.addEventListeners(new MessageListener(), new JoinListener(), tempTalkCommand, new SlashCommandManager(),
+		builder.addEventListeners(new MessageListener(), new JoinListener(), tempTalkCommand, cmdMan = new SlashCommandManager(false),
 				new ListenerAdapter() {
 					@Override
 					public void onGuildReady(GuildReadyEvent event) {
@@ -93,7 +93,6 @@ public class Exenbot {
 				});
 
 		shardMan = builder.build();
-		cmdMan = new SlashCommandManager();
 		logger = new DiscordLogger();
 
 		consoleListener();

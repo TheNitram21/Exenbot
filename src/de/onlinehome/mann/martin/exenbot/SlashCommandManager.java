@@ -20,29 +20,32 @@ import okhttp3.Response;
 public class SlashCommandManager extends ListenerAdapter {
 
 	private static OkHttpClient client = new OkHttpClient();
+	private boolean printResponses;
 
 	public ConcurrentHashMap<String, ServerCommand> commands;
 	public static final Permission DEFAULT_PERMISSION = Permission.MESSAGE_WRITE;
 
-	public SlashCommandManager() {
+	public SlashCommandManager(boolean printResponses) {
 		this.commands = new ConcurrentHashMap<>();
 
 		this.commands.put("stop", new StopCommand(Permission.MANAGE_SERVER));
 		this.commands.put("temptalk", Exenbot.tempTalkCommand);
 		this.commands.put("credits", new CreditsCommand(DEFAULT_PERMISSION));
+
+		this.printResponses = printResponses;
 	}
 
 	public static void activateSlashCommands(boolean printResponses, String... json) {
 		for (String string : json) {
-			Request request = new Request.Builder()
-					.url("https://discord.com/api/v8/applications/834039697314545735/guilds/820741090855616582/commands")
+			Request request = new Request.Builder().url(
+					"https://discord.com/api/v8/applications/834039697314545735/guilds/820741090855616582/commands")
 					.addHeader("Content-Type", "application/json")
 					.addHeader("Authorization", "Bot " + Configuration.getToken())
-					.post(RequestBody.create(MediaType.parse("application/json"), string))
-					.build();
+					.post(RequestBody.create(MediaType.parse("application/json"), string)).build();
 
 			try (Response response = client.newCall(request).execute()) {
-				if(printResponses) System.out.println(response.body().string());
+				if (printResponses)
+					System.out.println(response.body().string());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -69,7 +72,8 @@ public class SlashCommandManager extends ListenerAdapter {
 					.build();
 
 			try (Response response = client.newCall(request).execute()) {
-//				 System.out.println(response.body().string());
+				if (printResponses)
+					System.out.println(response.body().string());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
