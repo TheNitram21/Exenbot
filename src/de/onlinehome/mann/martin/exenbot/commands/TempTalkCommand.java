@@ -41,12 +41,15 @@ public class TempTalkCommand extends ListenerAdapter implements ServerCommand {
 										.getJSONObject(0).getJSONArray("options").getJSONObject(0).getString("value"))
 						.complete();
 				tempTalks.put(vc.getIdLong(), m);
+				return "Temptalk erstellt!";
 			} else if (mainArgument.equals("delete")) {
 				if (tempTalks.get(m.getVoiceState().getChannel().getIdLong()).equals(m)
 						|| m.hasPermission(Permission.MANAGE_CHANNEL)) {
 					tempTalks.remove(m.getVoiceState().getChannel().getIdLong());
 					m.getVoiceState().getChannel().delete().queue();
+					return "Temptalk gelöscht!";
 				}
+				return "Keine Berechtigungen -> Du bist nicht der Ersteller des Temptalks.";
 			} else if (mainArgument.equals("size")) {
 				if (tempTalks.get(m.getVoiceState().getChannel().getIdLong()).equals(m)
 						|| m.hasPermission(Permission.MANAGE_CHANNEL)) {
@@ -54,8 +57,11 @@ public class TempTalkCommand extends ListenerAdapter implements ServerCommand {
 							.setUserLimit(json.getJSONObject("d").getJSONObject("data").getJSONArray("options")
 									.getJSONObject(0).getJSONArray("options").getJSONObject(0).getInt("value"))
 							.queue();
+					return "Größe gesetzt!";
 				}
-			}
+				return "Keine Berechtigungen -> Du bist nicht der Ersteller des Temptalks.";
+			} else
+				return "Unbekanntes Argument";
 		} catch (NullPointerException e) {
 			return "Du bist in keinem Temptalk!";
 		} catch (ArrayIndexOutOfBoundsException e) {
@@ -63,8 +69,6 @@ public class TempTalkCommand extends ListenerAdapter implements ServerCommand {
 		} catch (IllegalArgumentException e) {
 			return "Größe darf minimal 0 und maximal 99 sein!";
 		}
-
-		return "Erfolg!";
 	}
 
 	@Override
